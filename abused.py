@@ -276,6 +276,14 @@ class EmergeOp(cmd.Cmd):
 
     # Cmd stuff
     prompt = Scale('>> ').bold().green()
+
+    def _sanitize(self, data):
+        retv = ''
+        if data.find('\x1b') != -1:
+            tmp = filter(lambda x: x in string.printable, data)
+            retv += re.sub('(\{|\})', '', re.sub('\[[0-9\;]+m', '', tmp))
+            return retv
+        return data
     
     def __init__(self):
         cmd.Cmd.__init__(self)
@@ -295,11 +303,14 @@ class EmergeOp(cmd.Cmd):
             self.prompt = '%s %s ' % (
                     Scale(self.keys[0]).bold().cyan(),
                     Scale('>>').bold().green())
+        self._promptPrep()
         # and fire off the commandloop
         self.cmdloop()
 
     def _emerge(self, args):
         os.system('clear')
+        Flags = {}
+        self._data['pkgs'] = []
         print("Please wait while the emerge operation is examined.\n")
         # start off the cmd string
         cmd = 'env EMERGE_DEFAULT_OPTS="%s"' % self._emergeOpts[self._data['optTarget']]
@@ -317,9 +328,9 @@ class EmergeOp(cmd.Cmd):
             cmd += '"'
         # And finalize the command string
         cmd += ' emerge %s' % ' '.join(args)
-        #print('DEBUG: %s' % cmd)
+        print('DEBUG: %s' % self._sanitize(cmd))
         cmd_p = subprocess.Popen(
-            cmd,
+            self._sanitize(cmd),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             shell=True,
@@ -333,6 +344,25 @@ class EmergeOp(cmd.Cmd):
                     self._data['pkgs'].append(Pkg(data))
             buff = cmd_p.stdout.readline()
 
+    def _promptPrep(self):
+        for i in self._data['pkgs']:
+            #if not i.binary():
+            print(i)
+        print('')
+        print('''
+You can edit any of the following variables with the command: var N
+
+Typing in a flag by it'self with or without the '-' modifier, will be
+merged into the current list, and once you are satisfied, you can retry
+with your edits by typing 'retry' or simply hitting <ENTER> on an empty
+line.
+
+More information can be found through the help command.
+''')
+        for k in range(0, len(self.keys)):
+            print('%3d# %s' % (k, self.keys[k]))
+        print('')
+            
     # Command 'quit' | 'exit' | ctrl+D
     def help_EOF(self):
         print('\n'.join(('Exit the program immediately.',
@@ -367,23 +397,31 @@ class EmergeOp(cmd.Cmd):
                 d = tkn
             # Go through the existing flags and see if we can find this one
             for etkn in Flags[self.keys[self._default]]:
-                pass
-            
-        # depending on the modifier given (if any) figure what (if anything)
-        # we need to do the flag already in the list
-        pass
+                if etkn._name == d:
+                    if enabled and not etkn.enabled():
+                        etkn._state = True
+                    if not enabled and etkn.enabled():
+                        etkn._state = False
     
     # Command 'retry'
     def help_retry(self):
         print('\n'.join(('retry',
-                         'Retry the emerge operation with your changes.',
-                         'This works by pressing <ENTER> on an empty line as well.')))
+                         'Retry the emerge operation with your changes.')))
 
     def do_retry(self, line):
         self._emerge(sys.argv[1:])
+        self._promptPrep()
 
+    # Command 'commit'
+    def help_commit(self):
+        print('\n'.join(('commit',
+                         'Commit your changes by running the emerge operation for real.'
+                         'This works by pressing <ENTER> on an empty line as well.')))
+    def do_commit(self, line):
+        pass
+    
     def emptyline(self):
-        self.do_retry(None)
+        self.do_commit(None)
         
     # Command 'var'
     def help_var(self):
@@ -401,29 +439,6 @@ class EmergeOp(cmd.Cmd):
             print('%s: There are only %d keys.' % (
                 Scale('error').bold().red(), len(self.keys)))
 
-    # Main loop entry
-    def cmdloop(self, intro=None):
-        for i in self._data['pkgs']:
-            #if not i.binary():
-            print(i)
-
-        print('')
-
-        print('''
-You can edit any of the following variables with the command: var N
-
-Typing in a flag by it'self with or without the '-' modifier, will be
-merged into the current list, and once you are satisfied, you can retry
-with your edits by typing 'retry' or simply hitting <ENTER> on an empty
-line.
-
-More information can be found through the help command.
-''')
-        for k in range(0, len(self.keys)):
-            print('%3d# %s' % (k, self.keys[k]))
-        print('')
-        cmd.Cmd.cmdloop(self, intro)
-            
 if __name__ == '__main__':
     try:
         app = EmergeOp()
