@@ -403,7 +403,16 @@ More information can be found through the help command.
                         etkn._state = True
                     if not enabled and etkn.enabled():
                         etkn._state = False
-    
+
+    # Command 'refresh'
+    def help_refresh(self):
+        print('\n'.join(('refresh',
+                         'Clear the screen and reprint the package data.')))
+
+    def do_refresh(self, line):
+        os.system('clear')
+        self._promptPrep()
+        
     # Command 'retry'
     def help_retry(self):
         print('\n'.join(('retry',
@@ -416,10 +425,11 @@ More information can be found through the help command.
     # Command 'commit'
     def help_commit(self):
         print('\n'.join(('commit',
-                         'Commit your changes by running the emerge operation for real.'
+                         'Commit your changes by running the emerge operation for real.',
                          'This works by pressing <ENTER> on an empty line as well.')))
     def do_commit(self, line):
-        pass
+        self._data['optTarget'] = 'liveFire'
+        self._emerge(sys.argv[1:])
     
     def emptyline(self):
         self.do_commit(None)
