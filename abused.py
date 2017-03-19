@@ -284,6 +284,9 @@ class Flag(object):
                 else:
                     return '%s%s%s' % (Scale(self._name).blue(), self._new, self._trans)
 
+    def enabled(self):
+        return self._state
+    
 class EmergeOp(cmd.Cmd):
     
     _emergeOpts = {
@@ -325,7 +328,21 @@ class EmergeOp(cmd.Cmd):
     def _emerge(self, args):
         os.system('clear')
         print("Please wait while the emerge operation is examined.\n")
+        # start off the cmd string
         cmd = 'env EMERGE_DEFAULT_OPTS="%s"' % self._emergeOpts[self._data['optTarget']]
+        # Add any flags we have recorded
+        for f in Flags.keys():
+            cmd += ' %s="' % f
+            st = []
+            for p in (0, 1):
+                for t in Flags[f]:
+                    if p == 0 and t.enabled():
+                        st.append(str(t))
+                    elif p == 1 and not t.enabled():
+                        st.append(str(t))
+            cmd += ' '.join(st)
+            cmd += '"'
+        # And finalize the command string
         cmd += ' emerge %s' % ' '.join(args)
         #print('DEBUG: %s' % cmd)
         cmd_p = subprocess.Popen(
@@ -347,6 +364,7 @@ class EmergeOp(cmd.Cmd):
         print('')
         return True
 
+    # Command 'retry'
     def help_retry(self):
         print('\n'.join(('retry',
                          'Retry the emerge operation with your changes.',
@@ -354,7 +372,11 @@ class EmergeOp(cmd.Cmd):
 
     def do_retry(self, line):
         self._emerge(sys.argv[1:])
-    
+
+    def emptyline(self):
+        self.do_retry(None)
+        
+    # Command 'var'
     def help_var(self):
         print('\n'.join(('var [index]',
                          'Switch editing mode to the variable referenced by "index"',
@@ -369,7 +391,8 @@ class EmergeOp(cmd.Cmd):
         else:
             print('%s: There are only %d keys.' % (
                 Scale('error').bold().red(), len(self.keys)))
-            
+
+    # Main loop entry
     def cmdloop(self, intro=None):
         for i in self._data['pkgs']:
             #if not i.binary():
