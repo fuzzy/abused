@@ -360,9 +360,27 @@ class EmergeOp(cmd.Cmd):
                     self._data['pkgs'].append(Pkg(data))
             buff = cmd_p.stdout.readline()
 
+    # Command 'quit' | 'exit' | ctrl+D
+    def help_EOF(self):
+        print('\n'.join(('Exit the program immediately.',
+                         'Aliases: quit, exit, <ctrl>+d',
+                         'Example: exit')))
+    
     def do_EOF(self, line):
         print('')
         return True
+
+    def help_exit(self):
+        self.help_EOF()
+        
+    def do_exit(self, line):
+        return self.do_EOF()
+
+    def help_quit(self):
+        self.help_EOF()
+        
+    def do_quit(self, line):
+        return self.do_EOF()
 
     # Command 'retry'
     def help_retry(self):
@@ -402,6 +420,12 @@ class EmergeOp(cmd.Cmd):
 
         print('''
 You can edit any of the following variables with the command: var N
+
+Typing in a flag by it'self with or without the '-' modifier, will be
+merged into the current list, and once you are satisfied, you can retry
+with your edits by typing 'retry' or simply hitting <ENTER> on an empty
+line.
+
 More information can be found through the help command.
 ''')
         for k in range(0, len(self.keys)):
