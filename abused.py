@@ -2,6 +2,7 @@
 
 import os
 import re
+import cmd
 import sys
 import shlex
 import string
@@ -283,7 +284,7 @@ class Flag(object):
                 else:
                     return '%s%s%s' % (Scale(self._name).blue(), self._new, self._trans)
 
-class EmergeOp(object):
+class EmergeOp(cmd.Cmd):
     
     _emergeOpts = {
         'fireDrill': '-pvbkuD --color n --binpkg-respect-use=y',
@@ -296,16 +297,36 @@ class EmergeOp(object):
         'pkgs':      [],
         'vnames':    []
     }
+
+    # Cmd stuff
+    prompt = Scale('>> ').bold().green()
     
-    def __init__(self, args=''):
+    def __init__(self):
+        cmd.Cmd.__init__(self)
+        self._emerge(sys.argv[1:])
+        # Now lets record our flags
+        self.keys = Flags.keys()
+        # and set our default to USE
+        self._default = False
+        for i in range(0, len(self.keys)):
+            if self.keys[i] == 'USE':
+                self._default = i
+                self.prompt = '%s %s ' % (
+                    Scale(self.keys[i]).bold().cyan(),
+                    Scale('>>').bold().green())
+        if not self._default:
+            self._default = 0
+            self.prompt = '%s %s ' % (
+                    Scale(self.keys[0]).bold().cyan(),
+                    Scale('>>').bold().green())
+        # and fire off the commandloop
+        self.cmdloop()
+
+    def _emerge(self, args):
         os.system('clear')
         print("Please wait while the emerge operation is examined.\n")
-        self._runEmerge(args)
-        return
-
-    def _runEmerge(self, args):
         cmd = 'env EMERGE_DEFAULT_OPTS="%s"' % self._emergeOpts[self._data['optTarget']]
-        cmd += ' emerge %s' % args
+        cmd += ' emerge %s' % ' '.join(args)
         #print('DEBUG: %s' % cmd)
         cmd_p = subprocess.Popen(
             cmd,
@@ -322,19 +343,51 @@ class EmergeOp(object):
                     self._data['pkgs'].append(Pkg(data))
             buff = cmd_p.stdout.readline()
 
+    def do_EOF(self, line):
+        print('')
+        return True
+
+    def help_retry(self):
+        print('\n'.join(('retry',
+                         'Retry the emerge operation with your changes.',
+                         'This works by pressing <ENTER> on an empty line as well.')))
+
+    def do_retry(self, line):
+        self._emerge(sys.argv[1:])
+    
+    def help_var(self):
+        print('\n'.join(('var [index]',
+                         'Switch editing mode to the variable referenced by "index"',
+                         'Example: var 2')))
+        
+    def do_var(self, index):
+        if int(index) < len(self.keys):
+            self._default = int(index)
+            self.prompt = '%s %s ' % (
+                Scale(self.keys[self._default]).bold().cyan(),
+                Scale('>>').bold().green())
+        else:
+            print('%s: There are only %d keys.' % (
+                Scale('error').bold().red(), len(self.keys)))
+            
+    def cmdloop(self, intro=None):
         for i in self._data['pkgs']:
             #if not i.binary():
             print(i)
 
         print('')
 
-        print('The following variables can be edited to influence this emerge operation.')
-        keys = Flags.keys()
-        for k in range(0, len(keys)):
-            print('%3d# %s' % (k, keys[k]))
-
+        print('''
+You can edit any of the following variables with the command: var N
+More information can be found through the help command.
+''')
+        for k in range(0, len(self.keys)):
+            print('%3d# %s' % (k, self.keys[k]))
+        print('')
+        cmd.Cmd.cmdloop(self, intro)
+            
 if __name__ == '__main__':
     try:
-        app = EmergeOp(' '.join(sys.argv[1:]))
+        app = EmergeOp()
     except KeyboardInterrupt:
         sys.exit(1)
