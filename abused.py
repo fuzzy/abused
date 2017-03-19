@@ -308,8 +308,8 @@ class EmergeOp(cmd.Cmd):
         self.cmdloop()
 
     def _emerge(self, args):
+        global Flags
         os.system('clear')
-        Flags = {}
         self._data['pkgs'] = []
         print("Please wait while the emerge operation is examined.\n")
         # start off the cmd string
@@ -328,6 +328,7 @@ class EmergeOp(cmd.Cmd):
             cmd += '"'
         # And finalize the command string
         cmd += ' emerge %s' % ' '.join(args)
+        Flags = {}
         print('DEBUG: %s' % self._sanitize(cmd))
         cmd_p = subprocess.Popen(
             self._sanitize(cmd),
