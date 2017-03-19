@@ -105,6 +105,8 @@ class Pkg(object):
                 fl.append(Scale(op).bold().cyan())
             elif op in ('*'):
                 fl.append(Scale(op).red())
+            elif op in ('N'):
+                fl.append(Scale(op).bold().green())
             else:
                 fl.append(op)
         while len(fl) < 5:
@@ -220,69 +222,40 @@ class Flag(object):
             tflag = flag[:-1]
             flag  = tflag
 
-        if not self._state:
-            self._name = '-%s' % flag
-        else:
-            self._name = flag
+        self._name = flag
                     
     def __str__(self):
-        if not self._iterative:
-            if self._state:
-                if self._bound:
-                    if self._trans == '*':
-                        return '{%s%s%s}' % (Scale(self._name).green(), self._new, self._trans)
-                    elif self._new == '%':
-                        return '{%s%s%s}' % (Scale(self._name).yellow(), self._new, self._trans)
-                    elif self._state:
-                        return '{%s%s%s}' % (Scale(self._name).red(), self._new, self._trans)
-                    else:
-                        return '{%s%s%s}' % (Scale(self._name).blue(), self._new, self._trans)
-                elif self._force:
-                    if self._trans == '*':
-                        return '(%s%s%s)' % (Scale(self._name).green(), self._new, self._trans)
-                    elif self._new == '%':
-                        return '(%s%s%s)' % (Scale(self._name).yellow(), self._new, self._trans)
-                    elif self._state:
-                        return '(%s%s%s)' % (Scale(self._name).red(), self._new, self._trans)
-                    else:
-                        return '(%s%s%s)' % (Scale(self._name).blue(), self._new, self._trans)
-                else:
-                    if self._trans == '*':
-                        return '%s%s%s' % (Scale(self._name).green(), self._new, self._trans)
-                    elif self._new == '%':
-                        return '%s%s%s' % (Scale(self._name).yellow(), self._new, self._trans)
-                    elif self._state:
-                        return '%s%s%s' % (Scale(self._name).red(), self._new, self._trans)
-                    else:
-                        return '%s%s%s' % (Scale(self._name).blue(), self._new, self._trans)
+        # inner helper function
+        def dump(s='', b='', a=''):
+            if self._trans == '*':
+                return '%s%s%s%s%s' % (b, Scale(s).green(), self._new, self._trans, a)
+            elif self._new == '%':
+                return '%s%s%s%s%s' % (b, Scale(s).yellow(), self._new, self._trans, a)
+            elif self._state:
+                return '%s%s%s%s%s' % (b, Scale(s).red(), self._new, self._trans, a)
+            else:
+                return '%s%s%s%s%s' % (b, Scale(s).blue(), self._new, self._trans, a)
+            
+        if not self._iterative and self._state:
+            if self._bound:
+                if self._state: return dump(self._name, '{', '}')
+                else: return dump('-%s' % self._name, '{', '}')
+            elif self._force:
+                if self._state: return dump(self._name, '(', ')')
+                else: return dump('-%s' % self._name, '(', ')')
+            else:
+                if self._state: return dump(self._name)
+                else: return dump('-%s' % self._name)
         else:
             if self._bound:
-                if self._trans == '*':
-                    return '{%s%s%s}' % (Scale(self._name).green(), self._new, self._trans)
-                elif self._new == '%':
-                    return '{%s%s%s}' % (Scale(self._name).yellow(), self._new, self._trans)
-                elif self._state:
-                    return '{%s%s%s}' % (Scale(self._name).red(), self._new, self._trans)
-                else:
-                    return '{%s%s%s}' % (Scale(self._name).blue(), self._new, self._trans)
+                if self._state: return dump(self._name, '{', '}')
+                else: return dump('-%s' % self._name, '{', '}')
             elif self._force:
-                if self._trans == '*':
-                    return '(%s%s%s)' % (Scale(self._name).green(), self._new, self._trans)
-                elif self._new == '%':
-                    return '(%s%s%s)' % (Scale(self._name).yellow(), self._new, self._trans)
-                elif self._state:
-                    return '(%s%s%s)' % (Scale(self._name).red(), self._new, self._trans)
-                else:
-                    return '(%s%s%s)' % (Scale(self._name).blue(), self._new, self._trans)
+                if self._state: return dump(self._name, '(', ')')
+                else: return dump('-%s' % self._name, '(', ')')
             else:
-                if self._trans == '*':
-                    return '%s%s%s' % (Scale(self._name).green(), self._new, self._trans)
-                elif self._new == '%':
-                    return '%s%s%s' % (Scale(self._name).yellow(), self._new, self._trans)
-                elif self._state:
-                    return '%s%s%s' % (Scale(self._name).red(), self._new, self._trans)
-                else:
-                    return '%s%s%s' % (Scale(self._name).blue(), self._new, self._trans)
+                if self._state: return dump(self._name)
+                else: return dump('-%s' % self._name)
 
     def enabled(self):
         return self._state
@@ -382,6 +355,24 @@ class EmergeOp(cmd.Cmd):
     def do_quit(self, line):
         return self.do_EOF()
 
+    # flag entry
+    def default(self, line):
+        for tkn in line.strip().split():
+            enabled = True
+            # remove any pre-existing '-' modifier
+            if tkn[0] == '-':
+                enabled = False
+                d = tkn[1:]
+            else:
+                d = tkn
+            # Go through the existing flags and see if we can find this one
+            for etkn in Flags[self.keys[self._default]]:
+                pass
+            
+        # depending on the modifier given (if any) figure what (if anything)
+        # we need to do the flag already in the list
+        pass
+    
     # Command 'retry'
     def help_retry(self):
         print('\n'.join(('retry',
