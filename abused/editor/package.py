@@ -53,20 +53,35 @@ class AbusedPkg(AbusedBase):
     
     def default(self, line):
         var = self.pkg['variables'][self.editing]
-        for f in range(0, len(var)):
-            test = False
-            # First this way:
-            if var[f].find(line.strip()) != -1:
-                test = var[f]
-            # and then this way:
-            elif line.strip().find(var[f]) != -1:
-                test = var[f]
+        for ln in line.strip().split():
+            for f in range(0, len(var)):
+                test = False
+                # our flag with no modifier
+                if ln[0] == '-':
+                    home = ln[1:]
+                else:
+                    home = ln
+                # the existing flag with no modifier
+                if var[f][0] == '-':
+                    away = var[f][1:]
+                else:
+                    away = var[f]
 
-            if test:
-                if line[0] == '-' and var[f][0] != '-':
-                    var[f] = line
-                elif line[0] != '-' and var[f][0] == '-':
-                    var[f] = line
+                # Determine if we even need to worry
+                if home == away:
+                    # First this way:
+                    if var[f].find(ln.strip()) != -1:
+                        test = var[f]
+                        # and then this way:
+                    elif ln.strip().find(var[f]) != -1:
+                        test = var[f]
+
+                    if test:
+                        if ln[0] == '-' and var[f][0] != '-':
+                            var[f] = ln
+                        elif ln[0] != '-' and var[f][0] == '-':
+                            var[f] = ln
+        self.do_refresh()
 
     #####
     # These are the command implementations
@@ -92,6 +107,7 @@ class AbusedPkg(AbusedBase):
             if line in self.keys:
                 self.editing = line
         self._updatePrompt()
+        self.do_refresh()
 
     # Command: refresh
     # Argument: None        os.system('clear')
@@ -105,11 +121,12 @@ class AbusedPkg(AbusedBase):
         
     def do_refresh(self, line=None):
         os.system('clear')
-        print('')
+        print('\n%s:' % Scale('Last known state').green())
         print(self.pkg['line'])
-        print('')
-        print('%s:' % Scale('Available variables to edit').green())
+        print('\n%s:' % Scale('Available variables to edit').green())
         for k in range(0, len(self.keys)):
             print('%s: %s' % (Scale(k).bold().red(), Scale(self.keys[k]).bold().yellow()))
-        print('')
-        self.postcommand()
+        print('\n%s:\n%s\n' % (
+            Scale('Current %s values' % self.editing).green(),
+            ' '.join(self.pkg['variables'][self.editing])))
+        
