@@ -4,6 +4,7 @@ import time
 
 from abused.scale          import *
 from abused.emerge         import *
+from abused.squish         import *
 from abused.editor.base    import *
 from abused.editor.package import *
 
@@ -52,6 +53,7 @@ class Abused(AbusedBase):
                     if p['category'] == data[0] and p['package'].find(data[1]) != -1:
                         o = AbusedPkg(p)
                         p = o.edit()
+                        squish(p)
         self.do_refresh()
 
     # Command 'refresh'
