@@ -7,7 +7,7 @@ class AbusedBase(cmd.Cmd):
         cmd.Cmd.__init__(self)
 
     # Command 'quit' | 'exit' | ctrl+D
-    def help_EOF(self):
+    def help_exit(self):
         print('\n'.join(('Exit the program immediately.',
                          'Aliases: quit, exit, <ctrl>+d',
                          'Example: exit')))
@@ -15,16 +15,10 @@ class AbusedBase(cmd.Cmd):
     def do_EOF(self, line=None):
         print('')
         return True
-
-    def help_exit(self):
-        self.help_EOF()
         
     def do_exit(self, line=None):
         return self.do_EOF()
 
-    def help_quit(self):
-        self.help_EOF()
-        
     def do_quit(self, line=None):
         return self.do_EOF()
 

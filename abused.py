@@ -35,6 +35,7 @@ if __name__ == '__main__':
                     inLines.append(buff.strip())
                     buff = ifp.readline()
                 ifp.close()
+                os.unlink(sys.argv[2])
             else:
                 print('%s: File (%s) does not exist.' % (
                     Scale('WARN').yellow(),

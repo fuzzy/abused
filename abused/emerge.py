@@ -17,6 +17,7 @@ class Emerge(object):
             '-u',                     # update
             '-D',                     # deep
             '--color=y',              # Show color output if possible
+            '--quiet-build',          # Show less build output
             '--newuse',               # reinstall/rebuild if use flags differ
             '--autounmask-write=n',   # do not automatically unmask packages
             '--keep-going=y',         # restart emerge after package build failure if possible
