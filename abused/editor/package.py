@@ -1,8 +1,11 @@
 
 import os
 
+
 from abused.scale       import *
+from abused.squish      import *
 from abused.editor.base import *
+
 
 # This is the package editor
 
@@ -12,10 +15,11 @@ class AbusedPkg(AbusedBase):
 
     def __init__(self, pkg={}):
         AbusedBase.__init__(self)
+        
         if pkg == {}:
             print('%s: Not a valid package object' % Scale('ERROR').bold().red())
             return
-
+        
         for t in ('category', 'package', 'version', 'variables'):
             if t not in pkg.keys():
                 print('%s: Not a valid package object' % Scale('ERROR').bold().red())
@@ -32,16 +36,21 @@ class AbusedPkg(AbusedBase):
             print('%s: Not a valid package object' % Scale('ERROR').bold().red())
             return
 
-        self.pkg  = pkg
-        self.keys = pkg['variables'].keys()
+        self.pkg     = pkg
+        self.keys    = pkg['variables'].keys()
+        self.editing = ''
+        self.edited  = False
+        
         self.keys.sort()
-        self.editing = self.keys[0]
         self._updatePrompt()
         self.do_refresh()
 
     def edit(self):
         self.cmdloop()
-        return self.pkg
+        if self.edited:
+            return squish(self.pkg)
+        else:
+            return self.pkg
 
     def _updatePrompt(self):
         pend        = Scale('::').bold().cyan()
@@ -77,6 +86,7 @@ class AbusedPkg(AbusedBase):
                         test = var[f]
 
                     if test:
+                        self.edited = True
                         if ln[0] == '-' and var[f][0] != '-':
                             var[f] = ln
                         elif ln[0] != '-' and var[f][0] == '-':
@@ -121,12 +131,18 @@ class AbusedPkg(AbusedBase):
         
     def do_refresh(self, line=None):
         os.system('clear')
+        if 'USE' in self.keys and self.editing == '':
+            self.editing = 'USE'
+        elif len(self.keys) > 0 and self.editing == '':
+            self.editing = self.keys[0]
+        self._updatePrompt()
         print('\n%s:' % Scale('Last known state').green())
         print(self.pkg['line'])
-        print('\n%s:' % Scale('Available variables to edit').green())
-        for k in range(0, len(self.keys)):
-            print('%s: %s' % (Scale(k).bold().red(), Scale(self.keys[k]).bold().yellow()))
-        print('\n%s:\n%s\n' % (
-            Scale('Current %s values' % self.editing).green(),
-            ' '.join(self.pkg['variables'][self.editing])))
+        if len(self.keys) > 0:
+            print('\n%s:' % Scale('Available variables to edit').green())
+            for k in range(0, len(self.keys)):
+                print('%s: %s' % (Scale(k).bold().red(), Scale(self.keys[k]).bold().yellow()))
+            print('\n%s:\n%s\n' % (
+                Scale('Current %s values' % self.editing).green(),
+                ' '.join(self.pkg['variables'][self.editing])))
         

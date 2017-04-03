@@ -8,8 +8,12 @@ def squish(pkg=False):
                     if f[0] == '-' and k.lower() == 'use':
                         use.append(f)
                     elif f[0] != '-':
-                        use.append(f)
-        print(use)
+                        if k.lower() == 'use':
+                            use.append(f)
+                        else:
+                            use.append('%s_%s' % (k.lower(), f))
+        pkg['flattened'] = use
+        return pkg
     except KeyError:
         pass
-    
+

@@ -5,6 +5,7 @@ import shlex
 import string
 import subprocess
 
+from abused.squish import squish
 
 class Emerge(object):
     __eOpts   = {
@@ -56,7 +57,8 @@ class Emerge(object):
                    'package':   '',
                    'version':   '',
                    'variables': {},
-                   'line':      data}
+                   'line':      data,
+                   'flattened': []}
 
             #print(ldata)
             lmax = len(ldata)

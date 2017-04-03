@@ -12,19 +12,19 @@ class AbusedBase(cmd.Cmd):
                          'Aliases: quit, exit, <ctrl>+d',
                          'Example: exit')))
     
-    def do_EOF(self, line):
+    def do_EOF(self, line=None):
         print('')
         return True
 
     def help_exit(self):
         self.help_EOF()
         
-    def do_exit(self, line):
-        return self.do_EOF(None)
+    def do_exit(self, line=None):
+        return self.do_EOF()
 
     def help_quit(self):
         self.help_EOF()
         
-    def do_quit(self, line):
-        return self.do_EOF(None)
+    def do_quit(self, line=None):
+        return self.do_EOF()
 
