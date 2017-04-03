@@ -135,4 +135,4 @@ class Emerge(object):
                                    ' '.join(self.__eOpts['args']),
                                    ' '.join(sys.argv[1:]))
         self._cmd(cmd)
-        os.exit(0)
+        sys.exit(0)
