@@ -94,14 +94,16 @@ class Emerge(object):
                             pkg['variables'][ldata[tkn]] = []
                     elif ldata[tkn-1] == '=':
                         for f in ldata[tkn][1:-1].split():
-                            pkg['variables'][cat['variable']].append(f)
+                            if f[0] not in ('(', '{'):
+                                pkg['variables'][cat['variable']].append(f)
                         cat['variable'] = None
                     
             self.packages.append(pkg)
         pass
 
     def _cmd(self, cmd):
-        self.replay = []
+        self.replay   = []
+        self.packages = []
         os.system('clear')
         print('DEBUG: %s' % cmd.strip())
         
@@ -128,8 +130,9 @@ class Emerge(object):
         self._cmd(cmd)
         return
         
-    def run(self):
-        cmd = '%s emerge %s FOO' % (self.sudo,
-                                    ' '.join(self.__eOpts['args']))
+    def doop(self):
+        cmd = '%s emerge %s %s' % (self.sudo,
+                                   ' '.join(self.__eOpts['args']),
+                                   ' '.join(sys.argv[1:]))
         self._cmd(cmd)
-        return
+        os.exit(0)

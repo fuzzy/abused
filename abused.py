@@ -26,10 +26,9 @@ def usage():
 if __name__ == '__main__':
     if sys.argv[1] == '--use-sync':
         inLines = []
-        print('this is not done yet')
         try:
             if os.path.isfile(sys.argv[2]):
-                print('Reading: %s' % sys.argv[2])
+                print('%s Reading: %s' % (Scale('>>').green(), sys.argv[2]))
                 ifp = open(sys.argv[2])
                 buff = ifp.readline()
                 while buff:
@@ -38,11 +37,11 @@ if __name__ == '__main__':
                 ifp.close()
             else:
                 print('%s: File (%s) does not exist.' % (
-                    Scale('ERROR').bold().red(),
+                    Scale('WARN').yellow(),
                     sys.argv[2]))
                 sys.exit(-1)
         except IndexError:
-            print("Not to mention you didn't even do it right.")
+            print("%s: Not to mention you didn't even do it right." % Scale('WARN').yellow())
 
         for l in inLines:
             cat = l.split()[0].split('/')[0]
@@ -60,16 +59,19 @@ if __name__ == '__main__':
 
             # find the line (if any) that matches the new one and remove it
             for ol in range(0, len(outLines)):
-                print(outLines[ol])
-                print(l)
-                if outLines[ol].split()[0] == l.split()[0]:
-                    outLines.pop(ol)
+                try:
+                    if outLines[ol].split()[0] == l.split()[0]:
+                        outLines.pop(ol)
+                except IndexError:
+                    pass
 
             # Now add out line to the outfiles, and sync it to disk
             outLines.append(l)
-            print('write -> %s' % ouf)
+            print('%s syncing %s' % (Scale('>>').green(), ouf))
+            ofp = open(ouf, 'w+')
             for l in outLines:
-                print(l)
+                ofp.write('%s\n' % l.strip())
+            ofp.close()
             
             
     elif sys.argv[1] in ('--help', '-h'):

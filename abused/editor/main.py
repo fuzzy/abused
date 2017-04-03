@@ -91,13 +91,17 @@ class Abused(AbusedBase):
                     ' '.join(pkg['flattened'])))
                 
         if len(updates) > 0:
+            sudo = ''
             tmpf = tempfile.mkstemp(prefix='abused-', dir='/tmp')
             outf = os.fdopen(tmpf[0], 'w')
             for l in updates:
                 outf.write('%s\n' % l.strip())
             outf.close()
-            os.system('%s --use-sync %s' % (sys.argv[0], tmpf[1]))
+            if os.getenv('USER').lower() != 'root':
+                sudo = 'sudo'
+            os.system('%s %s --use-sync %s' % (sudo, sys.argv[0], tmpf[1]))
         else:
-            print('There were no updates, this should fire off the build')
-
-        return self.do_EOF(None)
+            self.emerge.doop()
+            
+        time.sleep(2)
+        self.emerge.noop()
