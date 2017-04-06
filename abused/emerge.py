@@ -9,7 +9,7 @@ from abused.squish import squish
 
 class Emerge(object):
     __eOpts   = {
-        'noop': '-p',                 # pretend
+        'noop': '-p --nospinner',     # pretend
         'args': [
             '-v',                     # verbose
             '-b',                     # make binpkg
@@ -106,7 +106,6 @@ class Emerge(object):
         self.replay   = []
         self.packages = []
         os.system('clear')
-        print('DEBUG: %s' % cmd.strip())
         
         cmd_p = subprocess.Popen(
             self._sanitize(cmd),
@@ -135,5 +134,6 @@ class Emerge(object):
         cmd = '%s emerge %s %s' % (self.sudo,
                                    ' '.join(self.__eOpts['args']),
                                    ' '.join(sys.argv[1:]))
-        self._cmd(cmd)
+        os.system('clear')
+        os.system(cmd)
         sys.exit(0)

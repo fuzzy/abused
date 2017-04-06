@@ -62,6 +62,20 @@ class Abused(AbusedBase):
                         t = copy.deepcopy(p)
         self.do_refresh()
 
+    def complete_edit(self, text, line, begidx, endidx):
+        cmpl_r = []
+        for pkg in self.emerge.packages:
+            completions.append('%s/%s' % (pkg['category'], pkg['package']))
+        if not text:
+            cmpl = cmpl_r[:]
+        else:
+            cmpl = []
+            for f in cmpl_r:
+                if f.startswith(text):
+                    cmpl.append(f)
+        return cmpl
+            
+        
     # Command 'refresh'
     # Argument: none
     def help_refresh(self):
