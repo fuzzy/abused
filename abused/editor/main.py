@@ -2,6 +2,7 @@
 import copy
 import time
 import tempfile
+import readline
 
 
 from abused.scale          import *
@@ -65,7 +66,7 @@ class Abused(AbusedBase):
     def complete_edit(self, text, line, begidx, endidx):
         cmpl_r = []
         for pkg in self.emerge.packages:
-            completions.append('%s/%s' % (pkg['category'], pkg['package']))
+            cmpl_r.append('%s/%s' % (pkg['category'], pkg['package']))
         if not text:
             cmpl = cmpl_r[:]
         else:

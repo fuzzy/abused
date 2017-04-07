@@ -5,6 +5,7 @@ import shlex
 import string
 import subprocess
 
+from abused.scale  import *
 from abused.squish import squish
 
 class Emerge(object):
@@ -66,7 +67,7 @@ class Emerge(object):
             for tkn in range(0, lmax):
                 # ']' signals the end of the operation type symbols and the start
                 # of the 'version' part of the package
-                if ldata[tkn] == ']':
+                if ldata[tkn] == ']' and cat['category'] == None:
                     cat['category'] = False
                 # Now we know that up until the '/' character we will be looking at
                 # the category name
@@ -106,6 +107,7 @@ class Emerge(object):
         self.replay   = []
         self.packages = []
         os.system('clear')
+        print('%s %s' % (Scale('>>').green(), cmd))
         
         cmd_p = subprocess.Popen(
             self._sanitize(cmd),

@@ -61,6 +61,13 @@ class AbusedPkg(AbusedBase):
     #####
     
     def default(self, line):
+        return self.do_edit(line)
+
+    #####
+    # These are the command implementations
+    #####
+
+    def do_edit(self, line):
         var = self.pkg['variables'][self.editing]
         for ln in line.strip().split():
             for f in range(0, len(var)):
@@ -92,10 +99,6 @@ class AbusedPkg(AbusedBase):
                         elif ln[0] != '-' and var[f][0] == '-':
                             var[f] = ln
         self.do_refresh()
-
-    #####
-    # These are the command implementations
-    #####
         
     # Command: var
     # Argument: index or name of variable
