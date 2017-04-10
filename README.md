@@ -10,4 +10,5 @@ $ git clone https://git.thwap.org/fuzzy/abused
 $ cd abused && sudo ./setup.py install
 ```
 
+![usage](/abused.gif)
 
