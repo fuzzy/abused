@@ -4,6 +4,7 @@ import os
 import sys
 import readline
 
+from pprint             import pprint
 
 from abused.scale       import *
 from abused.editor.main import *
@@ -40,36 +41,39 @@ if __name__ == '__main__':
         except IndexError:
             print("%s: Not to mention you didn't even do it right." % Scale('WARN').yellow())
 
+        outLines = {}
         for l in inLines:
             cat = l.split()[0].split('/')[0]
+            if cat not in outLines.keys():
+                outLines[cat] = []
             ouf = '/etc/portage/package.use/%s' % cat
-
-            # read in the output content, if any
-            outLines = []
             if os.path.isfile(ouf):
                 ifp = open(ouf)
                 buf = ifp.readline()
                 while buf:
-                    outLines.append(buf.strip())
+                    if buf.strip() not in outLines[cat]:
+                        outLines[cat].append(buf.strip())
                     buf = ifp.readline()
                 ifp.close()
 
             # find the line (if any) that matches the new one and remove it
-            for ol in range(0, len(outLines)):
+            for ol in range(0, len(outLines[cat])):
                 try:
-                    if outLines[ol].split()[0] == l.split()[0]:
-                        outLines.pop(ol)
+                    if outLines[cat][ol].split()[0] == l.split()[0]:
+                        outLines[cat].pop(ol)
                 except IndexError:
                     pass
 
             # Now add out line to the outfiles, and sync it to disk
-            outLines.append(l)
+            outLines[cat].append(l)
+
+        for out in outLines.keys():
+            ouf = '/etc/portage/package.use/%s' % out
             print('%s syncing %s' % (Scale('>>').green(), ouf))
             ofp = open(ouf, 'w+')
-            for l in outLines:
+            for l in outLines[out]:
                 ofp.write('%s\n' % l.strip())
             ofp.close()
-            
             
     elif sys.argv[1] in ('--help', '-h'):
         usage()
