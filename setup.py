@@ -52,7 +52,7 @@ print('%s Installing...\n' % info)
 # Do the big final dance 
 setup(
     name='abused',
-    version='0.1.3',
+    version='0.3.6',
     description='A Basic USE eDitor is an inline use flag editor for Gentoo Linux.',
     author="Mike 'Fuzzy' Partin",
     author_email='fuzzy@fumanchu.org',
