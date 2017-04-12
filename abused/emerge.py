@@ -110,7 +110,7 @@ class Emerge(object):
         print('%s %s' % (Scale('>>').green(), cmd))
         
         cmd_p = subprocess.Popen(
-            self._sanitize(cmd),
+            self._sanitize('env EMERGE_DEFAULT_OPTS="" %s' % cmd),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             shell=True,
