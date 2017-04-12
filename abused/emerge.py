@@ -1,3 +1,4 @@
+# Stdlib
 import os
 import re
 import sys
@@ -5,26 +6,18 @@ import shlex
 import string
 import subprocess
 
+
+# 3rd party
+import yaml
+
+
+# internal
 from abused.scale  import *
 from abused.squish import squish
 
-class Emerge(object):
-    __eOpts   = {
-        'noop': '-p --nospinner',     # pretend
-        'args': [
-            '-v',                     # verbose
-            '-b',                     # make binpkg
-            '-k',                     # use binpkg if available
-            '-u',                     # update
-            '-D',                     # deep
-            '--color=y',              # Show color output if possible
-            '--quiet-build',          # Show less build output
-            '--newuse',               # reinstall/rebuild if use flags differ
-            '--autounmask-write=n',   # do not automatically unmask packages
-            '--keep-going=y',         # restart emerge after package build failure if possible
-        ],
-    }
 
+class Emerge(object):
+    
     # a "package" is a dict object, with the following structure:
     # { 'category':  string,
     #   'package':   string,
@@ -38,7 +31,21 @@ class Emerge(object):
             self.sudo = 'sudo'
         else:
             self.sudo = ''
+        self.config = self._getConfig()
+    
+    def _getConfig(self):
+        for p in ('/etc/abused/', '%s/.' % os.getenv('HOME'), './'):
+            if os.path.isfile('%sabused.cfg' % p):
+                return yaml.load(open('%sabused.cfg' % p))
+        return {}
 
+    def _getOpts(self, noop=True):
+        if noop:
+            start = self.config['emerge']['default_opts']['noop']
+        else:
+            start = []
+        return start + self.config['emerge']['default_opts']['op']
+        
     def _sanitize(self, data):
         retv = ''
         if data.find('\x1b') != -1:
@@ -125,16 +132,15 @@ class Emerge(object):
             
             
     def noop(self):
-        cmd = '%s emerge %s %s %s' % (self.sudo,       
-                                      self.__eOpts['noop'],
-                                      ' '.join(self.__eOpts['args']),
-                                      ' '.join(sys.argv[1:]))
+        cmd = '%s emerge %s %s' % (self.sudo,
+                                   ' '.join(self._getOpts(noop=True)),
+                                   ' '.join(sys.argv[1:]))
         self._cmd(cmd)
         return
         
     def doop(self):
         cmd = '%s emerge %s %s' % (self.sudo,
-                                   ' '.join(self.__eOpts['args']),
+                                   ' '.join(self._getOpts(noop=False)),
                                    ' '.join(sys.argv[1:]))
         os.system('clear')
         os.system(cmd)
