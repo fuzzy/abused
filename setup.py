@@ -61,5 +61,15 @@ setup(
     scripts=['bin/abused', 'bin/abused_usefix'],
 )
 
-print('\n%s You should copy the abused.cfg to either /etc/abused/abused.cfg,' % info)
-print('%s ${HOME}/.abused.cfg, or always run abused from this diretory.\n' % info)
+existing_config=False
+for i in ('/etc/abused/abused.cfg', '%s/.abusedrc' % os.getenv('HOME')):
+    if os.path.exists(i):
+        existing_config=True
+        
+if not existing_config:
+    print('\n%s You should copy the abused.cfg to either /etc/abused/abused.cfg,' % info)
+    print('%s ${HOME}/.abusedrc, or always run abused from this diretory.\n' % info)
+else:
+    print('\n%s Pre-existing installation detected. Please review the abused.cfg,' % info)
+    print('%s in the source distribution and see if any changes are needed in' % info)
+    print('%s your configuration files.' % info)
