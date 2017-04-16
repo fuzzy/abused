@@ -13,7 +13,8 @@ import yaml
 
 # internal
 from abused.scale  import *
-from abused.squish import squish
+from abused.squish import *
+from abused.config import *
 
 
 class Emerge(object):
@@ -31,20 +32,18 @@ class Emerge(object):
             self.sudo = 'sudo'
         else:
             self.sudo = ''
-        self.config = self._getConfig()
-    
-    def _getConfig(self):
-        for p in ('/etc/abused/', '%s/.' % os.getenv('HOME'), './'):
-            if os.path.isfile('%sabused.cfg' % p):
-                return yaml.load(open('%sabused.cfg' % p))
-        return {}
+        try:
+            self.config = OpenConfig()
+        except OSError, m:
+            print('%s %s' % (Scale('!!!').bold().red(), m))
+            sys.exit(1)
 
     def _getOpts(self, noop=True):
         if noop:
-            start = self.config['emerge']['default_opts']['noop']
+            start = self.config.emerge.default_opts.noop
         else:
             start = []
-        return start + self.config['emerge']['default_opts']['op']
+        return start + self.config.emerge.default_opts.op
         
     def _sanitize(self, data):
         retv = ''
@@ -110,38 +109,37 @@ class Emerge(object):
             self.packages.append(pkg)
         pass
 
-    def _cmd(self, cmd):
+    def _cmd(self, cmd, parse=True):
         self.replay   = []
         self.packages = []
         os.system('clear')
-        print('%s %s' % (Scale('>>').green(), cmd))
-        
-        cmd_p = subprocess.Popen(
-            self._sanitize('env EMERGE_DEFAULT_OPTS="" %s' % cmd),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            shell=True,
-            executable="/bin/bash"
-        )
-        buff = cmd_p.stdout.readline()
-        while buff:
-            self._parser(buff.strip())
-            print(buff.strip())
-            self.replay.append(buff.strip())
+        #print('%s %s env EMERGE_DEFAULT_OPTS="" %s' % (Scale('>>').green(), self.sudo, cmd))
+
+        if parse:
+            cmd_p = subprocess.Popen(
+                self._sanitize('%s env EMERGE_DEFAULT_OPTS="" %s' % (self.sudo, cmd)),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                shell=True,
+                executable="/bin/bash"
+            )
             buff = cmd_p.stdout.readline()
-            
+            while buff:
+                self._parser(buff.strip())
+                print(buff.strip())
+                self.replay.append(buff.strip())
+                buff = cmd_p.stdout.readline()
+        else:
+            os.system('%s env EMERGE_DEFAULT_OPTS="" %s' % (self.sudo, cmd))
             
     def noop(self):
-        cmd = '%s emerge %s %s' % (self.sudo,
-                                   ' '.join(self._getOpts(noop=True)),
-                                   ' '.join(sys.argv[1:]))
+        cmd = 'emerge %s %s' % (' '.join(self._getOpts(noop=True)),
+                                ' '.join(sys.argv[1:]))
         self._cmd(cmd)
         return
         
     def doop(self):
-        cmd = '%s emerge %s %s' % (self.sudo,
-                                   ' '.join(self._getOpts(noop=False)),
-                                   ' '.join(sys.argv[1:]))
-        os.system('clear')
-        os.system(cmd)
+        cmd = 'emerge %s %s' % (' '.join(self._getOpts(noop=False)),
+                                ' '.join(sys.argv[1:]))
+        self._cmd(cmd, False)
         sys.exit(0)
