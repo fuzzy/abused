@@ -53,14 +53,18 @@ class Abused(AbusedBase):
         
     def do_edit(self, line):
         t = None ## DEBUG
-        for o in line.split():
-            if o.find('/') != -1:
-                data = o.split('/')
-                for p in self.emerge.packages:
-                    if p['category'] == data[0] and p['package'].find(data[1]) != -1:
-                        o = AbusedPkg(p)
-                        p = o.edit()
-                        t = copy.deepcopy(p)
+        if line.split()[0] == 'all':
+            for p in self.emerge.packages:
+                o = AbusedPkg(p)
+                p = o.edit()
+        else:
+            for o in line.split():
+                if o.find('/') != -1:
+                    data = o.split('/')
+                    for p in self.emerge.packages:
+                        if p['category'] == data[0] and p['package'].find(data[1]) != -1:
+                            o = AbusedPkg(p)
+                            p = o.edit()
         self.do_refresh()
 
     def complete_edit(self, text, line, begidx, endidx):
