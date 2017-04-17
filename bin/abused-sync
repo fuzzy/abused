@@ -42,13 +42,30 @@ if __name__ == '__main__':
 
     # Add our commands here
     cmd = arg.add_mutually_exclusive_group()
-    cmd.add_argument('-R', '--resync', help='Read in, sort, and rewrite sorted configs. (all, %s)' % ', '.join(cfg.abused.persist.keys()))
-    cmd.add_argument('-S', '--sync',   help='Sync the contents of a specified file to disk.')
+    grps = ['all']+cfg.abused.persist.keys()
+    cmd.add_argument(
+        '-R',
+        '--resync',
+        help='Read in, sort, and rewrite sorted configs. (%s)' % ', '.join(grps)
+    )
+    cmd.add_argument(
+        '-S',
+        '--sync',
+        help='Sync the contents of a specified file to disk.'
+    )
 
     # Add our exclusive options
     grp = arg.add_mutually_exclusive_group()
-    grp.add_argument('-d', '--debug',   action='store_true', help='Show debugging output.')
-    grp.add_argument('-q', '--quiet',   action='store_true', help='Suppress output.')
+    grp.add_argument(
+        '-d',
+        '--debug',
+        action='store_true', help='Show debugging output.'
+    )
+    grp.add_argument(
+        '-q',
+        '--quiet',
+        action='store_true', help='Suppress output.'
+    )
 
     parg = arg.parse_args()
     
