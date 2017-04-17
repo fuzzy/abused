@@ -28,10 +28,6 @@ class Emerge(object):
     replay    = []
 
     def __init__(self):
-        if os.getenv('USER').lower() != 'root':
-            self.sudo = 'sudo'
-        else:
-            self.sudo = ''
         try:
             self.config = OpenConfig()
         except OSError, m:
@@ -117,7 +113,7 @@ class Emerge(object):
 
         if parse:
             cmd_p = subprocess.Popen(
-                self._sanitize('%s env EMERGE_DEFAULT_OPTS="" %s' % (self.sudo, cmd)),
+                self._sanitize('%s env EMERGE_DEFAULT_OPTS="" %s' % (self.config.emerge.sudo, cmd)),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 shell=True,
@@ -130,7 +126,7 @@ class Emerge(object):
                 self.replay.append(buff.strip())
                 buff = cmd_p.stdout.readline()
         else:
-            os.system('%s env EMERGE_DEFAULT_OPTS="" %s' % (self.sudo, cmd))
+            os.system('%s env EMERGE_DEFAULT_OPTS="" %s' % (self.config.emerge.sudo, cmd))
             
     def noop(self):
         cmd = 'emerge %s %s' % (' '.join(self._getOpts(noop=True)),

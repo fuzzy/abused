@@ -57,8 +57,8 @@ setup(
     author="Mike 'Fuzzy' Partin",
     author_email='fuzzy@fumanchu.org',
     url='https://git.thwap.org/fuzzy/abused',
-    packages=['abused', 'abused.editor'],
-    scripts=['bin/abused', 'bin/abused_usefix'],
+    packages=['abused', 'abused.editor', 'abused.portage'],
+    scripts=['bin/abused', 'bin/abused-sync'],
 )
 
 existing_config=False

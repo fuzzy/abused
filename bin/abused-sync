@@ -1,0 +1,78 @@
+#!/usr/bin/env python
+
+# Stdlib
+
+import os
+import re
+import sys
+import argparse
+
+
+# Internal
+
+from abused.config       import *
+from abused.scale        import *
+from abused.portage.base import *
+
+
+# Globals
+
+cfg  = OpenConfig()
+arg  = argparse.ArgumentParser()
+parg = None
+
+
+# Logic
+
+def info(msg):
+    print('%s %s' % (Scale('>>>').green(), msg.strip()))
+
+def debug(msg):
+    if parg.debug:
+        print('%s %s' % (Scale('###').bold().purple(), msg.strip()))
+
+def error(msg):
+    print('%s %s' % (Scale('!!!').bold().red(), msg.strip()))
+    sys.exit(1)
+
+if __name__ == '__main__':
+    # First and foremost determine if we are root
+    if len(cfg.emerge.sudo) > 0:
+        error('You must run this tool as root or via sudo.')
+
+    # Add our commands here
+    cmd = arg.add_mutually_exclusive_group()
+    cmd.add_argument('-R', '--resync', help='Read in, sort, and rewrite sorted configs. (all, %s)' % ', '.join(cfg.abused.persist.keys()))
+    cmd.add_argument('-S', '--sync',   help='Sync the contents of a specified file to disk.')
+
+    # Add our exclusive options
+    grp = arg.add_mutually_exclusive_group()
+    grp.add_argument('-d', '--debug',   action='store_true', help='Show debugging output.')
+    grp.add_argument('-q', '--quiet',   action='store_true', help='Suppress output.')
+
+    parg = arg.parse_args()
+    
+    if parg.sync == None and parg.resync == None:
+        error('You must use either -R or -S')
+
+    if parg.resync != None:
+        if parg.resync in ['all'] + cfg.abused.persist.keys():
+            if parg.resync == 'all':
+                for k in cfg.abused.persist.keys():
+                    try:
+                        portage = PortageBase(k)
+                        portage.resync()
+                    except ValueError, m:
+                        raise
+                        error('Failed to resync for: %s' % k)
+            else:
+                try:
+                    portage = PortageBase(parg.resync)
+                    portage.resync()
+                except ValueError:
+                    raise
+                    error('Failed to resync for: %s' % parg.resync)
+        else:
+            error('Invalid value passed to -R')
+    elif parg.sync != None:
+        print(parg.sync)

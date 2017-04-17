@@ -31,7 +31,6 @@ class AbusedPkg(AbusedBase):
                     Scale('INFO').bold().cyan(),
                     pkg['category'],
                     pkg['package']))
-                return
         except TypeError:
             print('%s: Not a valid package object' % Scale('ERROR').bold().red())
             return

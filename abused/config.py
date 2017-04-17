@@ -46,8 +46,12 @@ is raised
     rdata = False
     for i in ('%s/.abusedrc' % os.getenv('HOME'), '/etc/abused/abused.cfg'):
         if os.path.exists(i):
-            return descend(yaml.load(open(i)))
-
+            rdata = descend(yaml.load(open(i)))
+            if os.getenv('USER').lower() != 'root':
+                rdata.emerge.sudo = 'sudo '
+            else:
+                rdata.emerge.sudo = ''
+            return rdata
     # fail if not
     if not rdata:
         raise OSError, 'No config file found.'
