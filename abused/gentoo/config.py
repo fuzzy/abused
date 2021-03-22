@@ -51,15 +51,23 @@ class GentooConfig:
             cat, pkg = atom.split("/")
             cfgfile = f"{self._base_dir}/{cat}"
             outdata = []
-            cfgfp = open(cfgfile, "w+")
+            cfgfp = open(cfgfile, "r")
             buff = cfgfp.readline()
 
             while buff:
                 if buff.strip().split()[0].find(atom) != -1:
-                    outdata.append(f"{atom} {args.join(' ')}")
+                    outdata.append(f"{atom} {' '.join(args)}")
                 else:
                     outdata.append(buff.strip())
                 buff = cfgfp.readline()
+
+            cfgfp.close()
+            cfgfp = open(cfgfile, "w+")
+
+            for line in outdata:
+                cfgfp.write(f"{' '.join(line)}\n")
+
+            cfgfp.close()
 
             return True
         return False
