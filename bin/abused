@@ -4,28 +4,36 @@ import os
 import sys
 import readline
 
-from pprint             import pprint
+from pprint import pprint
 
-from abused.scale       import *
+from abused.scale import *
 from abused.editor.main import *
 
 
 def usage():
-    print('Usage: %s <args> or %s [emerge options and package names]' % (
-        os.path.basename(sys.argv[0]),
-        os.path.basename(sys.argv[0])))
-    print('\n'.join(('Args:',
-                     '--help | -h   \t\tShow this help.',
-                     '--use-sync <f>\t\tSync use flags from <f> to /etc/portage/package.use',
-                     '              \t\t(This generally is only used internally.)')))
+    print(
+        "Usage: %s <args> or %s [emerge options and package names]"
+        % (os.path.basename(sys.argv[0]), os.path.basename(sys.argv[0]))
+    )
+    print(
+        "\n".join(
+            (
+                "Args:",
+                "--help | -h   \t\tShow this help.",
+                "--use-sync <f>\t\tSync use flags from <f> to /etc/portage/package.use",
+                "              \t\t(This generally is only used internally.)",
+            )
+        )
+    )
     sys.exit(1)
 
-if __name__ == '__main__':
-    if sys.argv[1] == '--use-sync':
+
+if __name__ == "__main__":
+    if sys.argv[1] == "--use-sync":
         inLines = []
         try:
             if os.path.isfile(sys.argv[2]):
-                print('%s Reading: %s' % (Scale('>>').green(), sys.argv[2]))
+                print("%s Reading: %s" % (Scale(">>").green(), sys.argv[2]))
                 ifp = open(sys.argv[2])
                 buff = ifp.readline()
                 while buff:
@@ -34,19 +42,23 @@ if __name__ == '__main__':
                 ifp.close()
                 os.unlink(sys.argv[2])
             else:
-                print('%s: File (%s) does not exist.' % (
-                    Scale('WARN').yellow(),
-                    sys.argv[2]))
+                print(
+                    "%s: File (%s) does not exist."
+                    % (Scale("WARN").yellow(), sys.argv[2])
+                )
                 sys.exit(-1)
         except IndexError:
-            print("%s: Not to mention you didn't even do it right." % Scale('WARN').yellow())
+            print(
+                "%s: Not to mention you didn't even do it right."
+                % Scale("WARN").yellow()
+            )
 
         outLines = {}
         for l in inLines:
-            cat = l.split()[0].split('/')[0]
+            cat = l.split()[0].split("/")[0]
             if cat not in outLines.keys():
                 outLines[cat] = []
-            ouf = '/etc/portage/package.use/%s' % cat
+            ouf = "/etc/portage/package.use/%s" % cat
             if os.path.isfile(ouf):
                 ifp = open(ouf)
                 buf = ifp.readline()
@@ -68,14 +80,14 @@ if __name__ == '__main__':
             outLines[cat].append(l)
 
         for out in outLines.keys():
-            ouf = '/etc/portage/package.use/%s' % out
-            print('%s syncing %s' % (Scale('>>').green(), ouf))
-            ofp = open(ouf, 'w+')
+            ouf = "/etc/portage/package.use/%s" % out
+            print("%s syncing %s" % (Scale(">>").green(), ouf))
+            ofp = open(ouf, "w+")
             for l in outLines[out]:
-                ofp.write('%s\n' % l.strip())
+                ofp.write("%s\n" % l.strip())
             ofp.close()
-            
-    elif sys.argv[1] in ('--help', '-h'):
+
+    elif sys.argv[1] in ("--help", "-h"):
         usage()
     else:
         try:
