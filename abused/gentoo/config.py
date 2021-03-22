@@ -17,7 +17,6 @@ class GentooConfig:
 
     _base_dir = "/etc/gentoo/package."
     _pkg_type = False
-    _format = False
 
     def __init__(self, ptype=False):
         if ptype:
@@ -30,11 +29,6 @@ class GentooConfig:
                     "Something very wrong has happened in GentooConfig.__init__().",
                     ptype,
                 )
-
-
-class PackageUse(GentooConfig):
-    def __init__(self, ptype=False, pformat=False):
-        GentooConfig.__init__(self, ptype)
 
     def config_exists(self, atom=False):
         if atom:
@@ -50,3 +44,17 @@ class PackageUse(GentooConfig):
                         buff = fp.readline()
                     fp.close()
                     return False
+        return False
+
+    def update_config(self, atom=False):
+        if atom:
+            cat, pkg = atom.split("/")
+            cfgfile = f"{self._base_dir}/{cat}"
+
+            return True
+        return False
+
+
+class PackageUse(GentooConfig):
+    def __init__(self, ptype=False):
+        GentooConfig.__init__(self, ptype)
