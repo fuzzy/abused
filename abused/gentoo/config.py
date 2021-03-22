@@ -30,20 +30,32 @@ class GentooConfig:
                     ptype,
                 )
 
+    def _read_config(self, fpath=False):
+        retv = []
+        if fpath and os.path.isfile(fpath):
+            with open(fpath) as fp:
+                buff = fp.readline()
+                while buff:
+                    retv.append(buff.strip().split())
+            return retv
+        return False
+
+    def _write_config(self, fpath=False, cdata=()):
+        if fpath and os.path.isfile(fpath) and len(cdata) >= 1:
+            with open(cfgfile, "w+") as fp:
+                for line in cdata:
+                    fp.write(f"{' '.join(line)}\n")
+
     def config_exists(self, atom=False):
         if atom:
             cat, pkg = atom.split("/")
             cfgfile = f"{self._base_dir}/{cat}"
+            cfgdata = self._read_config(cfgfile)
 
-            if os.path.isfile(f"{cfgfile}"):
-                with open(cfgfile, "r") as fp:
-                    buff = fp.readline()
-                    while buff:
-                        if buff.strip().split()[0].find(pkg) != -1:
-                            return True
-                        buff = fp.readline()
-                    fp.close()
-                    return False
+            for line in cfgdata:
+                if line[0].find(pkg) != -1:
+                    return True
+
         return False
 
     def update_config(self, atom=False, *args):
