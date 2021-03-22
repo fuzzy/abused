@@ -46,10 +46,20 @@ class GentooConfig:
                     return False
         return False
 
-    def update_config(self, atom=False):
+    def update_config(self, atom=False, *args):
         if atom:
             cat, pkg = atom.split("/")
             cfgfile = f"{self._base_dir}/{cat}"
+            outdata = []
+            cfgfp = open(cfgfile, "w+")
+            buff = cfgfp.readline()
+
+            while buff:
+                if buff.strip().split()[0].find(atom) != -1:
+                    outdata.append(f"{atom} {args.join(' ')}")
+                else:
+                    outdata.append(buff.strip())
+                buff = cfgfp.readline()
 
             return True
         return False
