@@ -86,5 +86,25 @@ class GentooConfig:
 
 
 class PackageUse(GentooConfig):
-    def __init__(self, ptype=False):
-        GentooConfig.__init__(self, ptype)
+    def __init__(self):
+        GentooConfig.__init__(self, "use")
+
+
+class PackageLicense(GentooConfig):
+    def __init__(self):
+        GentooConfig.__init__(self, "license")
+
+
+class PackageEnv(GentooConfig):
+    def __init__(self):
+        GentooConfig.__init__(self, "env")
+
+
+class PackageMask(GentooConfig):
+    def __init__(self):
+        GentooConfig.__init__(self, "mask")
+
+
+class PackageKeywords(GentooConfig):
+    def __init__(self):
+        GentooConfig.__init__(self, "accept_keywords")
