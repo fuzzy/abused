@@ -3,7 +3,7 @@ import os
 from enum import Enum
 
 # Internal imports
-from abused.output import *
+# from abused.output import *
 
 
 class GentooConfigTypes(Enum):
@@ -77,7 +77,6 @@ class GentooConfig:
             tmpdata = self._read_config(cfgfile)
             outdata = [
                 "# This file is managed by abused",
-                "# category/package argument argument argument",
             ]
 
             if len(tmpdata) >= 1:
