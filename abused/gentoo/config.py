@@ -1,9 +1,11 @@
+""" abused.gentoo.config """
+
 # Stdlib imports
 import os
 from enum import Enum
 
 # Internal imports
-# from abused.output import *
+from abused.output import *
 
 
 class GentooConfigTypes(Enum):
