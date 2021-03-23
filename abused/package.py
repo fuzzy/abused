@@ -10,8 +10,11 @@ class Package:
     _category: str
     _version: str
     _variables: dict
+    _line: str
+    _flattened: List[str]
 
     def __init__(self, atom: str) -> None:
+        self.category = atom.strip().split("/")[0]
         pass
 
     @property
@@ -41,3 +44,19 @@ class Package:
     @variables.setter
     def variables(self, key: str, value: List[str]) -> None:
         self._variables[key] = value
+
+    @property
+    def line(self) -> str:
+        return self._line
+
+    @line.setter
+    def line(self, value: str) -> None:
+        self._line = value
+
+    @property
+    def flattened(self) -> List[str]:
+        return self._flattened
+
+    @flattened.setter
+    def flattened(self, data: List[str]) -> None:
+        self._flattened = data
