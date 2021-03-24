@@ -46,13 +46,13 @@ class AbusedConfig(dict):
         dict.__setitem__(self, attr, value)
 
 
-def merge_config(
-    odata: Union[AbusedConfig, dict], ndata: Union[AbusedConfig, dict]
-) -> AbusedConfig:
+def merge_config(odata: dict, ndata: dict) -> AbusedConfig:
     """merge_config(AbusedConfig, AbusedConfig) -> AbusedConfig
     Merge down the second instance into the first. If a key exists, it's
     value will be overwritten. New keys, will be added.
     """
+    for k, v in ndata.items():
+        odata[k] = v
     return odata
 
 
@@ -70,6 +70,6 @@ def read_config() -> AbusedConfig:
     ):
         if os.path.isfile(fn):
             data = AbusedConfig(yaml.safe_load(open(fn).read()))
-            retv = merge_config(retv, AbusedConfig(yaml.safe_load))
+            retv = merge_config(retv, data)
 
     return retv
