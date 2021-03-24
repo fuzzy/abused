@@ -53,7 +53,7 @@ def merge_config(
     Merge down the second instance into the first. If a key exists, it's
     value will be overwritten. New keys, will be added.
     """
-    return AbusedConfig()
+    return odata
 
 
 def read_config() -> AbusedConfig:
