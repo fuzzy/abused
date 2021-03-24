@@ -9,37 +9,59 @@ from typing import Any, Union
 import yaml
 
 
-ValidKeys = Union[str, int, float]
-ValidCfgs = Union[AbusedConfig, dict]
+VALID_KEYS = Union[str, int, float]
 
 
 class AbusedConfig(dict):
-    def __init__(self, data: dict = {}) -> None:
-        dict.__init__(self, self._recurse_data(data))
+    """abused.config.AbusedConfig({})
+    This is a custom dictionary object that allows items to be
+    referenced as attributes, and generally just makes things
+    a little bit nicer.
 
-    def _recurse_data(self, data: dict) -> dict:
-        retv = AbusedConfig()
+    Example:
+    >>> from abused.config import AbusedConfig
+    >>> obj = AbusedConfig()
+    >>> obj.foo = "bar"
+    >>> print(obj)
+    {'foo': 'bar'}
+    >>> print(obj.foo)
+    bar
+    >>>
+    """
+
+    def __init__(self, data: dict = {}) -> None:
+        dict.__init__(self, {})
         for k, v in data.items():
             if type(v) != dict:
-                retv[k] = v
+                self[k] = v
             else:
-                retv[k] = AbusedConfig(v)
-        return retv
+                self[k] = AbusedConfig(v)
 
-    def __getattr__(self, attr: string) -> Any:
+    def __getattr__(self, attr: str) -> Any:
         if attr in self.keys():
             return dict.__getitem__(self, attr)
         return dict.__getattribute__(self, attr)
 
-    def __setattr__(self, attr: ValidKeys, value: Any) -> None:
+    def __setattr__(self, attr: VALID_KEYS, value: Any) -> None:
         dict.__setitem__(self, attr, value)
 
 
-def merge_config(odata: ValidCfgs, ndata: ValidCfgs) -> AbusedConfig:
+def merge_config(
+    odata: Union[AbusedConfig, dict], ndata: Union[AbusedConfig, dict]
+) -> AbusedConfig:
+    """merge_config(AbusedConfig, AbusedConfig) -> AbusedConfig
+    Merge down the second instance into the first. If a key exists, it's
+    value will be overwritten. New keys, will be added.
+    """
     return AbusedConfig()
 
 
 def read_config() -> AbusedConfig:
+    """read_config() -> AbusedConfig
+    This will look for /etc/abused.cfg, /etc/abused/abused.cfg,
+    and ~/.abusedrc, in that order, and merge them into the running
+    configuration.
+    """
     retv = AbusedConfig()
     for fn in (
         "/etc/abused.cfg",
