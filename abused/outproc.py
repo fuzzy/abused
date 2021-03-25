@@ -53,9 +53,14 @@ class PegParser:
 class PortageParser:
 
     _cfg: AbusedConfig = read_config()
+    _peg: PegParser = PegParser()
 
     def __init__(self) -> None:
-        pass
+        self._init_package()
+        self._init_keyword()
+        self._init_license()
+        self._init_env()
+        self._init_mask()
 
     def _cmd(self, noop: bool = True) -> str:
         retv = [
@@ -72,3 +77,18 @@ class PortageParser:
             retv.append(arg)
 
         return " ".join(retv)
+
+    def _init_package(self) -> None:
+        pass
+
+    def _init_keyword(self) -> None:
+        pass
+
+    def _init_license(self) -> None:
+        pass
+
+    def _init_env(self) -> None:
+        pass
+
+    def _init_mask(self) -> None:
+        pass
