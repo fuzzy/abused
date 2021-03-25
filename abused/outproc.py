@@ -1,5 +1,5 @@
 """ abused.outproc
-Provides the OutProc() class, which wraps a PEG parser, and subprocess
+Provides the PortageParser() class, which wraps a PEG parser, and subprocess
 pipes.
 """
 
@@ -51,44 +51,46 @@ class PegParser:
 
 
 class PortageParser:
+    """ abused.outproc.PortageParser() """
 
     _cfg: AbusedConfig = read_config()
     _peg: PegParser = PegParser()
 
     def __init__(self) -> None:
-        self._init_package()
-        self._init_keyword()
-        self._init_license()
-        self._init_env()
-        self._init_mask()
+        # patterns for parsing package lines
+        self._peg.add_trigger(
+            "package",
+            "^\[.*\] [a-zA-Z0-9\-]*/[a-zA-Z0-9\-\_\]*-([0-9][0-9a-zA-Z\-\_]*)$",
+            self.parse_package,
+        )
+        # self._init_keyword()
+        # self._init_license()
+        # self._init_env()
+        # self._init_mask()
 
     def _cmd(self, noop: bool = True) -> str:
-        retv = [
+        retv: list[str] = []
+        # Determine if we need to do privilege escalation
+        if os.getenv("USER").lower() != "root":
+            retv.append(self._cfg.emerge.su_tool)
+        # Seed the rest of our command
+        for prep_line in (
             "env",
             "EMERGE_DEFAULT_OPTS=''",
             f"MAKEOPTS='{self._cfg.emerge.makeopts}'",
             "emerge",
-        ]
-
+        ):
+            retv.append(prep_line)
+        # Determine if this should be a No-OP
         if noop:
             for arg in self._cfg.emerge.noop:
                 retv.append(arg)
+        # And seed in the portage arguments as configured
         for arg in self._cfg.emerge.default_opts:
             retv.append(arg)
-
+        # And we are done!
         return " ".join(retv)
 
-    def _init_package(self) -> None:
-        pass
-
-    def _init_keyword(self) -> None:
-        pass
-
-    def _init_license(self) -> None:
-        pass
-
-    def _init_env(self) -> None:
-        pass
-
-    def _init_mask(self) -> None:
+    def parse_package(self, line: str) -> None:
+        """ PortageParser.parse_package(line: str) -> None """
         pass
