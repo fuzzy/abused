@@ -8,6 +8,9 @@ import re
 import subprocess
 from typing import Callable, TextIO
 
+# Internal imports
+from abused.config import *
+
 
 class PegParser:
     """ abused.outproc.PegParser """
@@ -43,5 +46,25 @@ class PegParser:
             return
 
 
-class OutProc:
-    pass
+class PortageParser:
+
+    _cfg: AbusedConfig = read_config()
+
+    def __init__(self) -> None:
+        pass
+
+    def _cmd(self, noop: bool = True) -> str:
+        retv = [
+            "env",
+            "EMERGE_DEFAULT_OPTS=''",
+            f"MAKEOPTS='{self._cfg.emerge.makeopts}'",
+            "emerge",
+        ]
+
+        if noop:
+            for arg in self._cfg.emerge.noop:
+                retv.append(arg)
+        for arg in self._cfg.emerge.default_opts:
+            retv.append(arg)
+
+        return " ".join(retv)
