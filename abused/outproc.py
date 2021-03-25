@@ -41,6 +41,10 @@ class PegParser:
         try:
             buff = infp.readline()
             while buff:
+                data = buff.strip()
+                for k, v in self._expressions.items():
+                    if v.match(buff):
+                        self._callbacks[k](buff)
                 buff = infp.readline()
         except AttributeError:
             return
