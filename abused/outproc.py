@@ -12,61 +12,30 @@ from typing import Callable, TextIO
 from abused.config import *
 
 
-class PegParser:
-    """ abused.outproc.PegParser """
-
-    _callbacks: dict
-    _expressions: dict
-
-    def add_trigger(self, id: str, patt: str, cbak: Callable) -> bool:
-        """ PegParser.add_trigger(id: str, patt: str, cbak: Callable) -> bool """
-        try:
-            self._expressions[id] = re.compile(patt)
-            self._callbacks[id] = cbak
-            return True
-        except:
-            return False
-
-    def del_trigger(self, id: str) -> bool:
-        """ PegParser.del_trigger(self, id: str) -> bool """
-        try:
-            self._expressions.pop(id)
-            self._callbacks.pop(id)
-            return True
-        except KeyError:
-            return False
-
-    def process(self, infp: TextIO) -> None:
-        """ PegParser.process(self, infp: TextIO) -> None """
-        try:
-            buff = infp.readline()
-            while buff:
-                data = buff.strip()
-                for k, v in self._expressions.items():
-                    if v.match(buff):
-                        self._callbacks[k](buff)
-                buff = infp.readline()
-        except AttributeError:
-            return
+class PortagePackage:
+    category: str
+    package: str
+    version: str
+    variables: dict
+    line: str
+    flattened: list
 
 
 class PortageParser:
     """ abused.outproc.PortageParser() """
 
     _cfg: AbusedConfig = read_config()
-    _peg: PegParser = PegParser()
 
     def __init__(self) -> None:
-        # patterns for parsing package lines
-        self._peg.add_trigger(
-            "package",
-            "^\[.*\] [a-zA-Z0-9\-]*/[a-zA-Z0-9\-\_\]*-([0-9][0-9a-zA-Z\-\_]*)$",
-            self.parse_package,
-        )
-        # self._init_keyword()
-        # self._init_license()
-        # self._init_env()
-        # self._init_mask()
+        pass
+
+    def _sanitize(self, data):
+        retv = ""
+        if data.find("\x1b") != -1:
+            tmp = filter(lambda x: x in string.printable, data)
+            retv += re.sub("(\{|\}|\*|\%)", "", re.sub("\[[0-9\;]+m", "", tmp))
+            return retv
+        return data
 
     def _cmd(self, noop: bool = True) -> str:
         retv: list[str] = []
@@ -91,6 +60,7 @@ class PortageParser:
         # And we are done!
         return " ".join(retv)
 
-    def parse_package(self, line: str) -> None:
-        """ PortageParser.parse_package(line: str) -> None """
-        pass
+    def _parser(self, data: str) -> None:
+        ldata = list(shlex.shlex(self._sanitize(data)))
+        if len(ldata) > 0 and ldata[0] == "[":
+            pkg = PortagePackage()
