@@ -15,12 +15,14 @@ from abused.config import *
 
 
 class PortagePackage:
-    category: str
-    package: str
-    version: str
-    variables: dict
-    line: str
-    flattened: list
+    """ abused.outproc.PortagePackage """
+
+    category: str = ""
+    package: str = ""
+    version: str = ""
+    variables: dict = {}
+    line: str = ""
+    flattened: list = []
 
 
 class PortageParser:
@@ -91,4 +93,12 @@ class PortageParser:
             pkg = PortagePackage()
             lmax = len(data)
             for tkn in range(0, lmax):
-                pass
+                if ldata[tkn] == "]" and pkg.category == "":
+                    pkg.category = "NONE"
+                    pkg.package = "NONE"
+                    pkg.version = "NONE"
+                elif pkg.category == "NONE" and ldata[tkn] != "/":
+                    pkg.category = ldata[tkn]
+                elif pkg.package == "NONE" and ldata[tkn - 1] == "/":
+                    pkg.package = ldata[tkn]
+            print(pkg)
