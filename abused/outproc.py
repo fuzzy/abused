@@ -5,6 +5,8 @@ pipes.
 
 # Stdlib imports
 import re
+import shlex
+import string
 import subprocess
 from typing import Callable, TextIO
 
@@ -37,7 +39,7 @@ class PortageParser:
             return retv
         return data
 
-    def _cmd(self, noop: bool = True) -> str:
+    def _portage_cmd(self, noop: bool = True) -> str:
         retv: list[str] = []
         # Determine if we need to do privilege escalation
         if os.getenv("USER").lower() != "root":
@@ -60,7 +62,33 @@ class PortageParser:
         # And we are done!
         return " ".join(retv)
 
+    def _cmdproc(self, parse: bool = True) -> None:
+        self._replay: list = []
+        self._packages: list = []
+        os.system("clear")
+
+        if parse:
+            cmd_p = subprocess.Popen(
+                self._sanitize(self._portage_cmd()),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                shell=True,
+                executable="/bin/bash",
+            )
+            buff = cmd_p.stdout.readline()
+            while buff:
+                data = buff.decode("utf-8").strip()
+                self._parser(data)
+                print(data)
+                self._replay.append(data)
+                buff = cmd_p.stdout.readline()
+        else:
+            os.system(self._sanitize(self._portage_cmd(noop=False)))
+
     def _parser(self, data: str) -> None:
         ldata = list(shlex.shlex(self._sanitize(data)))
         if len(ldata) > 0 and ldata[0] == "[":
             pkg = PortagePackage()
+            lmax = len(data)
+            for tkn in range(0, lmax):
+                pass
